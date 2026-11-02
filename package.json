@@ -2,12 +2,21 @@
   "name": "sportadmin_backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "sportadmin",
+    "backend",
+    "node",
+    "express",
+    "mysql"
+  ],
+  "author": "Katherin Amado",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^18.0.9",
