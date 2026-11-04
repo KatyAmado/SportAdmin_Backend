@@ -1,47 +1,75 @@
-const express = require('express');
-const userController = require('./user.controller');
+const express = require("express");
+const authenticate = require("../../middlewares/auth.middleware");
+const authorizeRoles = require("../../middlewares/role.middleware");
+const userController = require("./user.controller");
 const {
-validateCreateUser,
-validateUserId,
-validateUpdateUser,
-validateStatus
-} = require('./user.validator');
+  validateCreateUser,
+  validateUserId,
+  validateUpdateUser,
+  validateStatus,
+} = require("./user.validator");
+
 const router = express.Router();
+
+// 1. Proteger todas las rutas del módulo con autenticación JWT
+router.use(authenticate);
+
+// 2. Definir ruta para consultar el perfil del usuario autenticado (Cualquier rol activo)
+// ¡Importante! Debe ir antes de router.get("/:id", ...) para que Express no confunda "me" con un ID.
+router.get(
+  "/me",
+  userController.getMyProfile
+);
+
+// 3. Definir endpoints con autorización por rol (Solo id_Rol = 1: Administrador)
+
 // Crear usuario
 router.post(
-'/',
-validateCreateUser,
-userController.createUser
+  "/",
+  authorizeRoles(1),
+  validateCreateUser,
+  userController.createUser
 );
+
 // Listar usuarios
 router.get(
-'/',
-userController.getUsers
+  "/",
+  authorizeRoles(1),
+  userController.getUsers
 );
-// Consultar usuario
+
+// Consultar usuario por ID
 router.get(
-'/:id',
-validateUserId,
-userController.getUserById
+  "/:id",
+  authorizeRoles(1),
+  validateUserId,
+  userController.getUserById
 );
+
 // Actualizar usuario
 router.put(
-'/:id',
-validateUserId,
-validateUpdateUser,
-userController.updateUser
+  "/:id",
+  authorizeRoles(1),
+  validateUserId,
+  validateUpdateUser,
+  userController.updateUser
 );
-// Cambiar estado
+
+// Cambiar estado (Activar/Inactivar)
 router.patch(
-'/:id/status',
-validateUserId,
-validateStatus,
-userController.changeUserStatus
+  "/:id/status",
+  authorizeRoles(1),
+  validateUserId,
+  validateStatus,
+  userController.changeUserStatus
 );
-// Eliminación lógica
+
+// Eliminación lógica (Soft Delete)
 router.delete(
-'/:id',
-validateUserId,
-userController.deleteUser
+  "/:id",
+  authorizeRoles(1),
+  validateUserId,
+  userController.deleteUser
 );
+
 module.exports = router;

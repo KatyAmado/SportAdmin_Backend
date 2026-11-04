@@ -1,96 +1,178 @@
 # SportAdmin Backend
 
-API backend de SportAdmin, desarrollada con Node.js y Express. El servidor utiliza MySQL para la conexión a datos y carga su configuración desde variables de entorno.
+Backend del sistema SportAdmin, desarrollado con Node.js y Express para gestionar la lógica de negocio, autenticación y conexión con MySQL.
 
-## Estado actual
+## Descripción del proyecto
 
-La aplicación expone actualmente un endpoint de comprobación de estado:
+Este backend está diseñado como base para un sistema administrativo deportivo, con una estructura modular para separar funcionalidades como autenticación, usuarios y módulos futuros del negocio.
+
+Actualmente el proyecto ya cuenta con una base funcional de autenticación y validaciones de seguridad, además de un health check para verificar que la API está activa.
+
+## Funcionalidades implementadas
+
+- Verificación del estado de la API
+- Login de usuarios con validación de credenciales
+- Generación de JWT para autenticación
+- Middleware de autenticación por token Bearer
+- Middleware de autorización por roles
+- Manejo centralizado de errores
+- Conexión a MySQL con pool de conexiones
+
+## Endpoints disponibles
 
 | Método | Ruta | Descripción |
 | --- | --- | --- |
-| `GET` | `/api/health` | Confirma que la API está activa. |
+| `GET` | `/api/health` | Verifica que la API está corriendo |
+| `POST` | `/api/auth/login` | Permite iniciar sesión con usuario y contraseña |
+| `GET` | `/api/users` | Ruta montada en la app, pendiente de implementación de endpoints reales |
 
-Respuesta de ejemplo:
+### Ejemplo de login
 
 ```json
 {
-	"status": "ok",
-	"message": "sportadmin API is running"
+  "nombre_Usuario": "admin",
+  "contrasena": "123456"
 }
 ```
 
-El servidor verifica la conexión a MySQL antes de empezar a escuchar solicitudes. Las carpetas `academico`, `auth`, `comunicaciones`, `Deportistas`, `financiero` y `users` están previstas para organizar módulos; sus endpoints todavía no están implementados ni registrados en la aplicación.
+Respuesta esperada:
+
+```json
+{
+  "message": "Login successful",
+  "data": {
+    "token": "jwt_token",
+    "user": {
+      "id_usuario": 1,
+      "nombre_Usuario": "admin",
+      "id_Rol": 1
+    }
+  }
+}
+```
 
 ## Tecnologías
 
 - Node.js
 - Express 5
-- MySQL mediante `mysql2/promise`
-- `dotenv` para cargar variables de entorno
-- `nodemon` para desarrollo
+- MySQL con `mysql2/promise`
+- JWT para autenticación
+- Bcrypt para encriptación de contraseñas
+- Dotenv para variables de entorno
+- Nodemon para desarrollo
 
-## Requisitos
+## Requisitos previos
 
-- Node.js y npm instalados.
-- Un servidor MySQL accesible.
-- Una base de datos configurada para la aplicación.
+- Node.js instalado
+- npm instalado
+- MySQL corriendo en local o remoto
+- Base de datos creada con la estructura del sistema
 
-## Instalación y configuración
+## Instalación
 
-Desde la carpeta `SportAdmin_Backend`, instala las dependencias:
+1. Ubícate en la carpeta del backend:
+
+```bash
+cd SportAdmin_Backend
+```
+
+2. Instala las dependencias:
 
 ```bash
 npm install
 ```
 
-Crea un archivo `.env` en esta carpeta con los datos de conexión. Puedes partir de `.env.example` y completar la contraseña según la configuración de tu servidor:
+3. Crea un archivo `.env` en la raíz del proyecto a partir del ejemplo disponible en `.env.example`.
+
+## Variables de entorno
 
 ```env
 PORT=3000
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=
+DB_PASSWORD=tu_contraseña
 DB_NAME=sportadmin
 DB_PORT=3306
+JWT_SECRET=mi_clave_secreta
+JWT_EXPIRES_IN=2h
 ```
 
-La base de datos indicada en `DB_NAME` debe existir y las credenciales deben permitir la conexión. El proyecto todavía no incluye migraciones ni creación automática del esquema.
+> La variable `JWT_SECRET` es necesaria para firmar los tokens de autenticación.
 
 ## Ejecución
 
-Inicia el servidor:
+### Producción
 
 ```bash
 npm start
 ```
 
-Para desarrollo con reinicio automático al cambiar archivos:
+### Desarrollo
 
 ```bash
 npm run dev
 ```
 
-Con la configuración predeterminada, la API queda disponible en `http://localhost:3000`. Comprueba su estado en `http://localhost:3000/api/health`.
-
-## Estructura
+La API quedará disponible en:
 
 ```text
-src/
-	app.js                 Configura Express y las rutas de la aplicación
-	server.js              Comprueba MySQL e inicia el servidor HTTP
-	config/
-		database.js          Configura el pool de conexiones MySQL
-	modules/
-		academico/
-		auth/
-		comunicaciones/
-		Deportistas/
-		financiero/
-		users/
+http://localhost:3000
 ```
 
-Los directorios de módulos están destinados a separar las funcionalidades del sistema a medida que se implementen.
+Puedes verificar el estado con:
 
-## Pruebas
+```text
+http://localhost:3000/api/health
+```
 
-No hay pruebas automatizadas configuradas todavía. El comando `npm test` conserva por ahora el marcador predeterminado de npm y termina con error.
+## Estructura del proyecto
+
+```text
+SportAdmin_Backend/
+├── src/
+│   ├── app.js
+│   ├── server.js
+│   ├── config/
+│   │   └── database.js
+│   ├── middlewares/
+│   │   ├── auth.middleware.js
+│   │   ├── role.middleware.js
+│   │   └── error.middleware.js
+│   └── modules/
+│       ├── auth/
+│       │   ├── auth.controller.js
+│       │   ├── auth.repository.js
+│       │   ├── auth.routes.js
+│       │   ├── auth.service.js
+│       │   └── auth.validator.js
+│       ├── users/
+│       │   ├── user.controller.js
+│       │   ├── user.repository.js
+│       │   ├── user.routes.js
+│       │   ├── user.service.js
+│       │   └── user.validator.js
+│       ├── academico/
+│       ├── comunicaciones/
+│       ├── Deportistas/
+│       └── financiero/
+├── .env.example
+├── .gitignore
+├── package.json
+├── README.md
+└── server.js
+```
+
+## Observaciones
+
+- La autenticación ya está integrada y usa la tabla `usuario` de MySQL.
+- El módulo `auth` es la parte que más avance tiene dentro del proyecto.
+- Los otros módulos están preparados para continuar la organización del sistema por dominio.
+- Todavía falta definir y conectar los endpoints completos de usuarios y otros módulos del negocio.
+
+## Siguientes pasos recomendados
+
+- Completar los controladores y servicios de usuarios
+- Definir rutas para módulos de deportistas, académico, financiero y comunicaciones
+- Crear validaciones adicionales por roles y permisos
+- Añadir pruebas automatizadas
+- Documentar cada endpoint con ejemplos de request y response
