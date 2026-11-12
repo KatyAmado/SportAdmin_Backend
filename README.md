@@ -1,22 +1,21 @@
 # SportAdmin Backend
 
-Backend del sistema SportAdmin, desarrollado con Node.js y Express para gestionar la lógica de negocio, autenticación y conexión con MySQL.
+Backend del sistema SportAdmin, desarrollado con Node.js y Express para gestionar la lógica de negocio, autenticación, persistencia en base de datos relacional y conexión con MySQL.
 
 ## Descripción del proyecto
 
-Este backend está diseñado como base para un sistema administrativo deportivo, con una estructura modular para separar funcionalidades como autenticación, usuarios y módulos futuros del negocio.
+Este backend está diseñado como base para un sistema administrativo deportivo, estructurado bajo una arquitectura modular por dominios para separar funcionalidades clave como autenticación, gestión de deportistas, módulos académico, financiero y de comunicaciones.
 
-Actualmente el proyecto ya cuenta con una base funcional de autenticación y validaciones de seguridad, además de un health check para verificar que la API está activa.
+Actualmente el proyecto cuenta con conexión persistente a MySQL mediante un pool de conexiones, endpoints funcionales de autenticación y el módulo integrado de gestión de deportistas conectado a la base de datos real.
 
 ## Funcionalidades implementadas
 
-- Verificación del estado de la API
+- Verificación del estado de la API (`/api/health`)
 - Login de usuarios con validación de credenciales
-- Generación de JWT para autenticación
-- Middleware de autenticación por token Bearer
-- Middleware de autorización por roles
-- Manejo centralizado de errores
-- Conexión a MySQL con pool de conexiones
+- Generación de JWT para autenticación y middlewares de autorización por roles
+- Conexión persistente a MySQL mediante `mysql2` y pool de conexiones
+- Módulo completo de **Deportistas** conectado a la base de datos (`deportista`) con operaciones de consulta y estructurado por capas (`routes`, `controller`, `service`, `repository`)
+- Manejo centralizado de errores y variables de entorno
 
 ## Endpoints disponibles
 
@@ -24,32 +23,16 @@ Actualmente el proyecto ya cuenta con una base funcional de autenticación y val
 | --- | --- | --- |
 | `GET` | `/api/health` | Verifica que la API está corriendo |
 | `POST` | `/api/auth/login` | Permite iniciar sesión con usuario y contraseña |
-| `GET` | `/api/users` | Ruta montada en la app, pendiente de implementación de endpoints reales |
+| `GET` | `/api/deportistas` | Obtiene la lista completa de deportistas desde la base de datos MySQL |
+| `POST` | `/api/deportistas` | Registra un nuevo deportista en la base de datos |
 
-### Ejemplo de login
-
-```json
-{
-  "nombre_Usuario": "admin",
-  "contrasena": "123456"
-}
-```
-
-Respuesta esperada:
+### Ejemplo de respuesta: `/api/deportistas`
 
 ```json
 {
-  "message": "Login successful",
-  "data": {
-    "token": "jwt_token",
-    "user": {
-      "id_usuario": 1,
-      "nombre_Usuario": "admin",
-      "id_Rol": 1
-    }
-  }
+  "success": true,
+  "data": []
 }
-```
 
 ## Tecnologías
 
@@ -66,7 +49,7 @@ Respuesta esperada:
 - Node.js instalado
 - npm instalado
 - MySQL corriendo en local o remoto
-- Base de datos creada con la estructura del sistema
+- Base de datos (sportadmin) creada con sus respectivas tablas
 
 ## Instalación
 
@@ -83,6 +66,22 @@ npm install
 ```
 
 3. Crea un archivo `.env` en la raíz del proyecto a partir del ejemplo disponible en `.env.example`.
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=tu_contraseña
+DB_NAME=sportadmin
+DB_PORT=3306
+JWT_SECRET=tu_clave_secreta
+JWT_EXPIRES_IN=2h
+
+Ejecuta el servidor en modo desarrollo:
+
+```Bash
+npm run dev
+```
+La API quedará disponible en http://localhost:3000.
+
 
 ## Variables de entorno
 
@@ -152,9 +151,25 @@ SportAdmin_Backend/
 │       │   ├── user.service.js
 │       │   └── user.validator.js
 │       ├── academico/
+│       │   ├── academico.repository.js
+│       │   ├── academico.routes.js
+│       │   ├── academico.service.js
+│       │   └── academico.controller.js
 │       ├── comunicaciones/
+│       │   ├── comunicaciones.repository.js
+│       │   ├── comunicaciones.routes.js
+│       │   ├── comunicaciones.service.js
+│       │   └── comunicaciones.controller.js
 │       ├── Deportistas/
+│       │   ├── deportistas.repository.js
+│       │   ├── deportistas.routes.js
+│       │   ├── deportistas.service.js
+│       │   └── deportistas.controller.js
 │       └── financiero/
+│       │   ├── financiero.repository.js
+│       │   ├── financiero.routes.js
+│       │   ├── financiero.service.js
+│       │   └── financiero.controller.js
 ├── .env.example
 ├── .gitignore
 ├── package.json
@@ -171,8 +186,9 @@ SportAdmin_Backend/
 
 ## Siguientes pasos recomendados
 
-- Completar los controladores y servicios de usuarios
-- Definir rutas para módulos de deportistas, académico, financiero y comunicaciones
+- Conectar los siguientes submódulos (académico, financiero y comunicaciones) a MySQL
+- Ampliar las pruebas de inserción y consumo de endpoints desde Postman
+- Integrar las peticiones del frontend con los endpoints reales del backend
 - Crear validaciones adicionales por roles y permisos
 - Añadir pruebas automatizadas
 - Documentar cada endpoint con ejemplos de request y response
